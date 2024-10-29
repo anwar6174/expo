@@ -27,8 +27,8 @@ class UpdatesStateMachine(
         return state
       }
 
-      override fun resetState() {
-        reset()
+      override fun resetStateAfterRestart() {
+        resetAndIncrementRestartCount()
       }
     }
   )
@@ -54,9 +54,9 @@ class UpdatesStateMachine(
   /**
    * Reset the machine to its starting state. Should only be called after the app restarts (reloadAsync()).
    */
-  private fun reset() {
+  private fun resetAndIncrementRestartCount() {
     state = UpdatesStateValue.Idle
-    context = context.resetCopyWithIncrementedSequenceNumber()
+    context = context.resetCopyWithIncrementedRestartCountAndSequenceNumber()
     logger.info("Updates state change: reset, context = ${context.json}")
     sendContextToJS()
   }
@@ -126,6 +126,12 @@ class UpdatesStateMachine(
      */
     private fun reduceContext(context: UpdatesStateContext, event: UpdatesStateEvent): UpdatesStateContext {
       return when (event) {
+        is UpdatesStateEvent.Startup -> context.copyAndIncrementSequenceNumber(
+          isStartupProcedureRunning = true
+        )
+        is UpdatesStateEvent.StartupComplete -> context.copyAndIncrementSequenceNumber(
+          isStartupProcedureRunning = false
+        )
         is UpdatesStateEvent.Check -> context.copyAndIncrementSequenceNumber(
           isChecking = true
         )

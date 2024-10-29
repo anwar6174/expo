@@ -7,6 +7,8 @@ import java.util.Date
 Structure representing an event that can be sent to the machine.
  */
 sealed class UpdatesStateEvent(val type: UpdatesStateEventType) {
+  class Startup : UpdatesStateEvent(UpdatesStateEventType.Startup)
+  class StartupComplete : UpdatesStateEvent(UpdatesStateEventType.StartupComplete)
   class Check : UpdatesStateEvent(UpdatesStateEventType.Check)
   class Download : UpdatesStateEvent(UpdatesStateEventType.Download)
   class CheckError(private val errorMessage: String) : UpdatesStateEvent(UpdatesStateEventType.CheckError) {
